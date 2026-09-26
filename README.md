@@ -35,6 +35,10 @@ The final workflow contains two main automation paths:
 
 ![n8n Workflow Overview](workflow-overview.png)
 
+### Workflow Mindmap
+
+![Workflow Mindmap](workflow-mindmap.png)
+
 ### Final Workflow Structure
 
 #### Inventory Update Flow
