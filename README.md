@@ -136,6 +136,14 @@ My contribution to the team project included:
 
 ---
 
+## Workflow Export
+
+A sanitized version of the n8n workflow is included in this repository for reference:
+
+`inventory-procurement-workflow-sanitized.json`
+
+Sensitive credential identifiers and webhook IDs have been removed or replaced with placeholders.
+
 ## Technologies Used
 
 - **n8n** — workflow automation
