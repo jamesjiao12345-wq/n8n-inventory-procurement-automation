@@ -1,0 +1,557 @@
+{
+  "name": "final workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Logistics form",
+        "formDescription": "Enter changes in inventory (Raw Material)",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Select Action",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Stock in"
+                  },
+                  {
+                    "option": "Stock out"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Product name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "=SKU Number",
+              "fieldType": "textarea"
+            },
+            {
+              "fieldLabel": "Quantity",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Reason",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "New Supply"
+                  },
+                  {
+                    "option": "Sale"
+                  },
+                  {
+                    "option": "Damaged/Wasted"
+                  },
+                  {
+                    "option": "Stock correction"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Submit"
+        }
+      },
+      "id": "5d093603-5a12-4935-835f-e58771612163",
+      "name": "Form2",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "b4085e22-c5ad-44c9-89f9-569257a47461"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8",
+          "mode": "list",
+          "cachedResultName": "Hackathon Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Product Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Product Name",
+              "lookupValue": "={{ $('Form2').item.json['Product name'] }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "id": "3762c796-c48d-401f-998f-97d8e914f009",
+      "name": "Lookup current stock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8",
+          "mode": "list",
+          "cachedResultName": "Hackathon Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Product Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name": "={{ $('Form2').item.json['Product name'] }}",
+            "Raw material (Current)": "={{ Number($json['Raw material (Current)'] || 0) + ($('Form2').item.json['Select Action'] === 'Stock in' ? Number($('Form2').item.json.Quantity) : -Number($('Form2').item.json.Quantity)) }}",
+            "Raw material needed": "={{ Number($json['Requirement per batch'] || 0) * Number($('Form2').item.json['Number of batches to be taken per hour'] || 0) * Number($('Form2').item.json['Number of working hours'] || 0) }}",
+            "Raw material shortfall": "={{ (Number($json['Requirement per batch'] || 0) * Number($('Form2').item.json['Number of batches to be taken per hour'] || 0) * Number($('Form2').item.json['Number of working hours'] || 0)) - (Number($json['Raw material (Current)'] || 0) + ($('Form2').item.json['Select Action'] === 'Stock in' ? Number($('Form2').item.json.Quantity) : -Number($('Form2').item.json.Quantity))) }}"
+          },
+          "matchingColumns": [
+            "Product Name"
+          ],
+          "schema": [
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Requirement per batch",
+              "displayName": "Requirement per batch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Raw material (Current)",
+              "displayName": "Raw material (Current)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Supplier Name",
+              "displayName": "Supplier Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Supplier Email",
+              "displayName": "Supplier Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Raw material needed",
+              "displayName": "Raw material needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Raw material shortfall",
+              "displayName": "Raw material shortfall",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "id": "6823e511-af1c-4654-b8b5-15c24d5fa1f5",
+      "name": "Update row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8",
+          "cachedResultName": "Hackathon Sheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Product Sheet"
+        },
+        "options": {}
+      },
+      "id": "df25f0b5-62d6-40eb-aa5d-07e527f237e2",
+      "name": "Read Products",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "==You are reviewing an inventory ledger to identify products that need\nreordering.\n\nLedger (each row is one stock transaction):\n{{ JSON.stringify($json.ledger) }}\n\nProduct reference (thresholds per SKU):\n{{ JSON.stringify($json.products) }}\n\nInstructions:\n1. For each SKU in the product reference, compute current stock by\n   summing ledger quantities for that SKU: add Quantity where Action\n   is \"IN\", subtract where Action is \"OUT\". If a SKU has no ledger\n   entries, treat current stock as 0.\n2. Compare each SKU's current stock to its \"Reorder threshold\" field.\n3. A SKU needs reordering if current stock is at or below its\n   \"Reorder threshold\".\n4. If a SKU needs reordering, the order quantity is equal to its\n   \"Reorder threshold\" value.\n5. If a SKU's \"Reorder threshold\" field is blank or missing, skip it\n   and list it in skipped_items rather than guessing a number.\n\nUse these exact field names from the product reference — do not infer\nor match by meaning:\n- \"SKU\"\n- \"Product Name\"\n- \"Requirement per batch\"\n- \"Raw material (Current)\"\n- \"Reorder threshold\"\n- \"Supplier Name\"\n- \"Supplier Email\"\n\nRespond with ONLY a JSON object (no markdown, no commentary, no text\noutside the object), in exactly this shape:\n\n{\n  \"needs_reorder\": <true if one or more SKUs need reordering, else false>,\n  \"low_stock_items\": [\n    {\n      \"SKU\": \"...\",\n      \"Product Name\": \"...\",\n      \"current_stock\": <integer>,\n      \"threshold\": <integer, from \"Reorder threshold\">,\n      \"order_quantity\": <integer, equal to threshold>,\n      \"supplier_name\": \"...\",\n      \"supplier_email\": \"...\"\n    }\n  ],\n  \"skipped_items\": [\n    { \"SKU\": \"...\", \"reason\": \"missing Reorder threshold\" }\n  ]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        304
+      ],
+      "id": "233c7fe4-54c6-4108-9d39-0326fe80079c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $('Product Sheet').all().map(item => item.json);\nconst ledger = $('Inventory').all().map(item => item.json);\n\n\nreturn [{\n  json: {\n    products, \n    ledger\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        304
+      ],
+      "id": "35706fb1-a8a7-44f7-8d19-606fe524ead3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8",
+          "mode": "list",
+          "cachedResultName": "Hackathon Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1780839487,
+          "mode": "list",
+          "cachedResultName": "Inventory Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit#gid=1780839487"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        304
+      ],
+      "id": "dfa438b7-1008-411a-983f-3dacda4b12c5",
+      "name": "Inventory",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ys71UdGQn4pHrY4W",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8",
+          "mode": "list",
+          "cachedResultName": "Hackathon Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Product Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XOCjI4Usmjg3KcF8zMaAfHxja20fdGTlx10jaC7KNB8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        304
+      ],
+      "id": "af623c61-9ce0-4784-99ed-3a2e63a2c069",
+      "name": "Product Sheet",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.supplier_email }}",
+        "subject": "=Reorder request: {{ $json.product_name }} (low stock)",
+        "message": "=Hello {{ $json.supplier_name }},<br><br>\nWe require stock for <b>{{ $json.product_name }}</b>. We require {{ $json.order_quantity }} units.<br>\nKindly share quotation for the same.<br>\nThanks.",
+        "options": {}
+      },
+      "id": "5e689d2a-16f6-4c64-ba36-4c2766dabc8a",
+      "name": "Email Supplier",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        304
+      ],
+      "webhookId": "9cc298ea-52ae-4c54-ad35-e5779ac80d23"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Parse AI Agent1 output into one item per low-stock SKU ===\n\nconst raw = $input.first().json.output;\n\nif (raw === undefined || raw === null) {\n  throw new Error('AI Agent1 returned no \"output\" field. Check the agent node ran successfully.');\n}\n\n// Strip ```json ... ``` fences in case the model wrapped the JSON despite instructions\nlet cleaned = String(raw).trim();\ncleaned = cleaned.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (err) {\n  throw new Error(\n    `Failed to parse AI Agent1 output as JSON: ${err.message}\\n---raw output---\\n${cleaned}`\n  );\n}\n\n// Basic shape validation\nif (typeof parsed !== 'object' || parsed === null) {\n  throw new Error('Parsed AI Agent1 output is not an object.');\n}\n\nconst lowStockItems = Array.isArray(parsed.low_stock_items) ? parsed.low_stock_items : [];\nconst skippedItems = Array.isArray(parsed.skipped_items) ? parsed.skipped_items : [];\n\nif (skippedItems.length > 0) {\n  // Not fatal — just visible in the execution log for debugging\n  console.log('Skipped items (missing Reorder threshold):', JSON.stringify(skippedItems));\n}\n\nif (!parsed.needs_reorder || lowStockItems.length === 0) {\n  // Nothing to reorder — return no items so downstream nodes don't run\n  return [];\n}\n\n// Emit one item per SKU, with normalized field names for Email Supplier\nreturn lowStockItems\n  .filter(item => item && item.supplier_email) // skip anything with no email to send to\n  .map(item => ({\n    json: {\n      sku: item.SKU ?? '',\n      product_name: item['Product Name'] ?? '',\n      current_stock: item.current_stock ?? null,\n      threshold: item.threshold ?? null,\n      order_quantity: item.order_quantity ?? item.threshold ?? null,\n      supplier_name: item.supplier_name ?? '',\n      supplier_email: item.supplier_email\n    }\n  }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        304
+      ],
+      "id": "ee09f61a-5216-47a0-a09e-402091bd4d99",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        512
+      ],
+      "id": "4d964ca4-0735-4691-8071-129eee489e88",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 14,
+              "triggerAtMinute": 35
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        304
+      ],
+      "id": "8dad1c3d-2a51-46dc-ba51-c5ef6a5d5586",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form2": {
+      "main": [
+        [
+          {
+            "node": "Lookup current stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup current stock": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Products": {
+      "main": [
+        [
+          {
+            "node": "Product Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product Sheet": {
+      "main": [
+        [
+          {
+            "node": "Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Email Supplier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "62143dcf-057c-4ff8-ae2d-4369cb75982b",
+  "meta": {
+    "instanceId": "892d90b80b52c5a5b6ca0491c711c8d5559ba6504e0e25f9a8bfc7afcdc141a6"
+  },
+  "nodeGroups": [],
+  "id": "VpPyYUzhTrTWQFHJ",
+  "tags": []
+}
